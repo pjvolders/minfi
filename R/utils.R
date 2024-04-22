@@ -8,8 +8,10 @@ utils::globalVariables(c("channel"))
 .default.450k.annotation <- "ilmn12.hg19"
 .default.epic.annotation <- "ilm10b4.hg19"
 .default.allergy.annotation <- "ilm12.hg19"
+.default.epicv2.annotation <- "20a1.hg38"
 .metharray.types <- c("IlluminaHumanMethylation450k",
                       "IlluminaHumanMethylationEPIC",
+		      "IlluminaHumanMethylationEPICv2",
                       "IlluminaHumanMethylation27k",
                       "IlluminaHumanMethylationAllergy",
                       "HorvathMammalMethylChip40")
