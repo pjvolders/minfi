@@ -15,7 +15,7 @@
         arrayAnnotation <- c(
             array = "IlluminaHumanMethylationEPIC",
             annotation = .default.epic.annotation)
-    } else if (nProbes >= 1150000 && nProbes <= 1153000) {
+    } else if (nProbes >= 1105000 && nProbes <= 1105300) {
         arrayAnnotation <- c(
             array = "IlluminaHumanMethylationEPICv2",
             annotation = .default.epicv2.annotation)
