@@ -202,6 +202,10 @@ ilogit2 <- function(x) 2^x / (1 + 2^x)
     annotation(object)["array"] == "IlluminaHumanMethylationEPIC"
 }
 
+.isEPICv2 <- function(object) {
+    annotation(object)["array"] == "IlluminaHumanMethylationEPICv2"
+}
+
 .isAllergy <- function(object) {
     annotation(object)["array"] == "IlluminaHumanMethylationAllergy"
 }

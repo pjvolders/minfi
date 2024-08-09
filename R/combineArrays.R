@@ -26,6 +26,10 @@
     probes
 }
 
+.fixEpicv2Probes <- function(x) {
+    vapply(strsplit(x, "_"), function(xx) xx[1], character(1))
+}
+
 # Convert the rgSet into the outType array.
 .convertArray_450k_epic <- function(rgSet,
                                     outType = c("IlluminaHumanMethylation450k",
@@ -34,7 +38,7 @@
 
     outType <- match.arg(outType)
     .isRGOrStop(rgSet)
-    stopifnot(.is450k(rgSet) || .isEPIC(rgSet))
+    stopifnot(.is450k(rgSet) || .isEPIC(rgSet) || .isEPICv2(rgSet))
 
     array <- annotation(rgSet)["array"]
     if (array == outType) stop("'rgSet' already in the 'outType' array type.")
@@ -51,9 +55,16 @@
     # Probes of Type I
     probes1 <- getProbeInfo(manifest1, type = "I")
     probes2 <- getProbeInfo(manifest2, type = "I")
-    commonNames <- intersect(probes1$Name, probes2$Name)
-    probes1 <- probes1[match(commonNames, probes1$Name), ]
-    probes2 <- probes2[match(commonNames, probes2$Name), ]
+    commonNames <- intersect(
+        .fixEpicv2Probes(probes1$Name),
+        .fixEpicv2Probes(probes2$Name)
+    )
+    probes1 <- probes1[match(commonNames, .fixEpicv2Probes(probes1$Name)), ]
+    probes2 <- probes2[match(commonNames, .fixEpicv2Probes(probes2$Name)), ]
+    true_common_probes <- (probes1$Color == probes2$Color) &
+        (probes1$ProbeSeqA == probes2$ProbeSeqA)
+    probes1 <- probes1[true_common_probes, ]
+    probes2 <- probes2[true_common_probes, ]
     stopifnot(all(probes1$Color == probes2$Color))
     stopifnot(all(probes1$ProbeSeqA == probes2$ProbeSeqA))
     stopifnot(all(probes1$ProbeSeqB == probes2$ProbeSeqB))
@@ -67,9 +78,15 @@
     # Probes of Type II
     probes1 <- getProbeInfo(manifest1, type = "II")
     probes2 <- getProbeInfo(manifest2, type = "II")
-    commonNames <- intersect(probes1$Name, probes2$Name)
-    probes1 <- probes1[match(commonNames, probes1$Name),]
-    probes2 <- probes2[match(commonNames, probes2$Name),]
+    commonNames <- intersect(
+        .fixEpicv2Probes(probes1$Name),
+        .fixEpicv2Probes(probes2$Name)
+    )
+    probes1 <- probes1[match(commonNames, .fixEpicv2Probes(probes1$Name)), ]
+    probes2 <- probes2[match(commonNames, .fixEpicv2Probes(probes2$Name)), ]
+    true_common_probes <- (probes1$ProbeSeqA == probes2$ProbeSeqA)
+    probes1 <- probes1[true_common_probes, ]
+    probes2 <- probes2[true_common_probes, ]
     stopifnot(all(probes1$ProbeSeqA == probes2$ProbeSeqA))
     # Translating rgSet2 addresses to rgSet1 addresses
     translate <- probes1$AddressA
@@ -79,26 +96,40 @@
     keepAddresses$II <- unname(translate)
 
     # Probes of Type SnpI
-    probes1 <- getProbeInfo(manifest1, type = "SnpI")
-    probes2 <- getProbeInfo(manifest2, type = "SnpI")
-    commonNames <- intersect(probes1$Name, probes2$Name)
-    probes1 <- probes1[match(commonNames, probes1$Name),]
-    probes2 <- probes2[match(commonNames, probes2$Name),]
-    stopifnot(all(probes1$ProbeSeqA == probes2$ProbeSeqB))
-    stopifnot(all(probes1$ProbeSeqB == probes2$ProbeSeqA))
-    # Translating rgSet2 addresses to rgSet1 addresses
-    translate <- c(probes1$AddressA, probes1$AddressB)
-    names(translate) <- c(probes2$AddressA, probes2$AddressB)
-    wh <- which(rownames(rgSet) %in% names(translate))
-    rownames(rgSet)[wh] <- translate[rownames(rgSet)[wh]]
-    keepAddresses$SnpI <- unname(translate)
+    # probes1 <- getProbeInfo(manifest1, type = "SnpI")
+    # probes2 <- getProbeInfo(manifest2, type = "SnpI")
+    # commonNames <- intersect(
+    #     .fixEpicv2Probes(probes1$Name),
+    #     .fixEpicv2Probes(probes2$Name)
+    # )
+    # probes1 <- probes1[match(commonNames, .fixEpicv2Probes(probes1$Name)), ]
+    # probes2 <- probes2[match(commonNames, .fixEpicv2Probes(probes2$Name)), ]
+    # true_common_probes <- (probes1$Color == probes2$Color) &
+    #     (probes1$ProbeSeqA == probes2$ProbeSeqB) &
+    #     (probes1$ProbeSeqB == probes2$ProbeSeqA)
+    # probes1 <- probes1[true_common_probes, ]
+    # probes2 <- probes2[true_common_probes, ]
+    # stopifnot(all(probes1$ProbeSeqA == probes2$ProbeSeqB))
+    # stopifnot(all(probes1$ProbeSeqB == probes2$ProbeSeqA))
+    # # Translating rgSet2 addresses to rgSet1 addresses
+    # translate <- c(probes1$AddressA, probes1$AddressB)
+    # names(translate) <- c(probes2$AddressA, probes2$AddressB)
+    # wh <- which(rownames(rgSet) %in% names(translate))
+    # rownames(rgSet)[wh] <- translate[rownames(rgSet)[wh]]
+    # keepAddresses$SnpI <- unname(translate)
 
     # Probes of Type SnpII
     probes1 <- getProbeInfo(manifest1, type = "SnpII")
     probes2 <- getProbeInfo(manifest2, type = "SnpII")
-    commonNames <- intersect(probes1$Name, probes2$Name)
-    probes1 <- probes1[match(commonNames, probes1$Name),]
-    probes2 <- probes2[match(commonNames, probes2$Name),]
+    commonNames <- intersect(
+        .fixEpicv2Probes(probes1$Name),
+        .fixEpicv2Probes(probes2$Name)
+    )
+    probes1 <- probes1[match(commonNames, .fixEpicv2Probes(probes1$Name)), ]
+    probes2 <- probes2[match(commonNames, .fixEpicv2Probes(probes2$Name)), ]
+    true_common_probes <- (probes1$ProbeSeqA == probes2$ProbeSeqA)
+    probes1 <- probes1[true_common_probes, ]
+    probes2 <- probes2[true_common_probes, ]
     stopifnot(all(probes1$ProbeSeqA == probes2$ProbeSeqA))
     # Translating rgSet2 addresses to rgSet1 addresses
     translate <- probes1$AddressA
